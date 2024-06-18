@@ -1,7 +1,7 @@
 ---
 title: SECCON Beginners CTF 2024 参加記
 tags:
-  - ''
+  - 'seccon2024'
 private: false
 updated_at: ''
 id: null
